@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>판매 등록</title></head>
+<body>
+<nav th:replace="~{layout :: nav('sales')}"></nav>
+<div class="container">
+    <div class="card" style="max-width:600px;">
+        <h2>판매 등록</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>판매일자 * (YYYYMMDD)</label>
+                <input type="text" id="salesYmd" placeholder="20240101" maxlength="8"/>
+            </div>
+            <div class="form-group">
+                <label>상품 *</label>
+                <select id="itemCd">
+                    <option value="">-- 상품 선택 --</option>
+                    <option th:each="item : ${items}" th:value="${item.itemCd}"
+                            th:text="${item.itemCd + ' - ' + item.itemNm + ' (재고: ' + item.itemQnty + ')'}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>판매수량 *</label>
+                <input type="number" id="salesQnty" placeholder="1" min="1"/>
+            </div>
+            <div class="form-group">
+                <label>판매가격 *</label>
+                <input type="number" id="salesPrice" placeholder="0" min="0"/>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>주문구분코드</label>
+                <input type="text" id="orderSeCd" placeholder="예: ONLINE" maxlength="100"/>
+            </div>
+            <div class="form-group">
+                <label>판매구분코드</label>
+                <input type="text" id="salesSeCd" placeholder="예: NORMAL" maxlength="100"/>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>판매장소코드</label>
+                <input type="text" id="salesPlaceSeCd" placeholder="예: MARKET" maxlength="100"/>
+            </div>
+            <div class="form-group">
+                <label>판매이벤트 (선택)</label>
+                <select id="salesEventSeq">
+                    <option value="">-- 이벤트 없음 --</option>
+                    <option th:each="ev : ${events}" th:value="${ev.salesEventSeq}"
+                            th:text="${ev.salesEventSeq + ' - ' + ev.salesEventNm + ' (' + ev.salesEventStrYmd + '~' + ev.salesEventEndYmd + ')'}"></option>
+                </select>
+            </div>
+        </div>
+        <div id="errMsg" class="alert alert-error" style="display:none;"></div>
+        <div class="actions" style="margin-top:8px;">
+            <a href="/view/sales" class="btn btn-secondary">취소</a>
+            <button class="btn btn-success" onclick="save()">저장</button>
+        </div>
+    </div>
+</div>
+<script>
+function save() {
+    const salesYmd      = document.getElementById('salesYmd').value.trim();
+    const itemCd        = document.getElementById('itemCd').value;
+    const salesQnty     = Number(document.getElementById('salesQnty').value);
+    const salesPrice    = Number(document.getElementById('salesPrice').value);
+    const orderSeCd     = document.getElementById('orderSeCd').value.trim() || null;
+    const salesSeCd     = document.getElementById('salesSeCd').value.trim() || null;
+    const salesPlaceSeCd= document.getElementById('salesPlaceSeCd').value.trim() || null;
+    const evSeq         = document.getElementById('salesEventSeq').value;
+
+    if (!salesYmd || !/^\d{8}$/.test(salesYmd)) { showErr('판매일자는 8자리 숫자여야 합니다. (예: 20240101)'); return; }
+    if (!itemCd) { showErr('상품을 선택하세요.'); return; }
+    if (salesQnty < 1) { showErr('판매수량은 1 이상이어야 합니다.'); return; }
+
+    const body = { salesYmd, itemCd, salesQnty, salesPrice, orderSeCd, salesSeCd, salesPlaceSeCd,
+                   salesEventSeq: evSeq ? Number(evSeq) : null };
+
+    fetch(API_BASE + '/api/v1/sales', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) location.href = '/view/sales/' + data.data.salesSeq;
+            else showErr(data.message);
+        });
+}
+function showErr(msg) {
+    const el = document.getElementById('errMsg');
+    el.textContent = msg; el.style.display = 'block';
+}
+</script>
+</body>
+</html>

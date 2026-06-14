@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>상품 등록/수정</title></head>
+<body>
+<nav th:replace="~{layout :: nav('items')}"></nav>
+<div class="container">
+    <div class="card" style="max-width:600px;">
+        <h2 th:text="${item != null} ? '상품 수정' : '상품 등록'"></h2>
+        <div class="form-group">
+            <label>상품코드 *</label>
+            <input type="text" id="itemCd" th:value="${item?.itemCd}" th:readonly="${item != null}" placeholder="예: ITEM001" maxlength="100"/>
+        </div>
+        <div class="form-group">
+            <label>상품명 *</label>
+            <input type="text" id="itemNm" th:value="${item?.itemNm}" placeholder="상품명 입력"/>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>원가 *</label>
+                <input type="number" id="unitPrice" th:value="${item?.unitPrice}" placeholder="0" min="0"/>
+            </div>
+            <div class="form-group">
+                <label>판매가 *</label>
+                <input type="number" id="sellPrice" th:value="${item?.sellPrice}" placeholder="0" min="0"/>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>재고수량 *</label>
+                <input type="number" id="itemQnty" th:value="${item?.itemQnty}" placeholder="0" min="0"/>
+            </div>
+            <div class="form-group">
+                <label>상품구분코드</label>
+                <input type="text" id="itemSeCd" th:value="${item?.itemSeCd}" placeholder="예: A" maxlength="100"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>카테고리코드</label>
+            <input type="text" id="itemCateCd" th:value="${item?.itemCateCd}" placeholder="예: FISH" maxlength="100"/>
+        </div>
+        <div id="errMsg" class="alert alert-error" style="display:none;"></div>
+        <div class="actions" style="margin-top:8px;">
+            <a href="/view/items" class="btn btn-secondary">취소</a>
+            <button class="btn btn-primary" onclick="save()">저장</button>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    const isEdit = /*[[${item != null}]]*/ false;
+    const originalCd = /*[[${item?.itemCd}]]*/ null;
+
+    function save() {
+        const body = {
+            itemCd:     document.getElementById('itemCd').value.trim(),
+            itemNm:     document.getElementById('itemNm').value.trim(),
+            itemQnty:   Number(document.getElementById('itemQnty').value),
+            unitPrice:  Number(document.getElementById('unitPrice').value),
+            sellPrice:  Number(document.getElementById('sellPrice').value),
+            itemSeCd:   document.getElementById('itemSeCd').value.trim() || null,
+            itemCateCd: document.getElementById('itemCateCd').value.trim() || null
+        };
+        if (!body.itemCd || !body.itemNm) { showErr('상품코드와 상품명은 필수입니다.'); return; }
+
+        const url    = isEdit ? API_BASE + '/api/v1/items/' + encodeURIComponent(originalCd) : API_BASE + '/api/v1/items';
+        const method = isEdit ? 'PUT' : 'POST';
+        fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) location.href = '/view/items/' + encodeURIComponent(data.data.itemCd);
+                else showErr(data.message);
+            });
+    }
+    function showErr(msg) {
+        const el = document.getElementById('errMsg');
+        el.textContent = msg; el.style.display = 'block';
+    }
+</script>
+</body>
+</html>

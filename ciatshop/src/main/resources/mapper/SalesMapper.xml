@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ciatshop.api.mapper.SalesMapper">
+
+    <resultMap id="salesResultMap" type="com.ciatshop.api.domain.Sales">
+        <id     property="salesSeq"       column="SALES_SEQ"/>
+        <result property="salesYmd"       column="SALES_YMD"/>
+        <result property="itemCd"         column="ITEM_CD"/>
+        <result property="itemNm"         column="ITEM_NM"/>
+        <result property="salesQnty"      column="SALES_QNTY"/>
+        <result property="regDt"          column="REG_DT"/>
+        <result property="updtDt"         column="UPDT_DT"/>
+        <result property="regrSeq"        column="REGR_SEQ"/>
+        <result property="updrSeq"        column="UPDR_SEQ"/>
+        <result property="orderSeCd"      column="ORDER_SE_CD"/>
+        <result property="salesSeCd"      column="SALES_SE_CD"/>
+        <result property="salesPrice"     column="SALES_PRICE"/>
+        <result property="salesPlaceSeCd" column="SALES_PLACE_SE_CD"/>
+        <result property="salesEventSeq"  column="SALES_EVENT_SEQ"/>
+    </resultMap>
+
+    <sql id="selectSalesSql">
+        SELECT s.SALES_SEQ, s.SALES_YMD, s.ITEM_CD, i.ITEM_NM,
+               s.SALES_QNTY, s.REG_DT, s.UPDT_DT,
+               s.REGR_SEQ, s.UPDR_SEQ,
+               s.ORDER_SE_CD, s.SALES_SE_CD, s.SALES_PRICE,
+               s.SALES_PLACE_SE_CD, s.SALES_EVENT_SEQ
+        FROM TB_SALES s
+        LEFT JOIN TB_ITEM i ON s.ITEM_CD = i.ITEM_CD
+    </sql>
+
+    <select id="selectByYmd" resultMap="salesResultMap">
+        <include refid="selectSalesSql"/>
+        WHERE s.SALES_YMD = #{salesYmd}
+        <if test="salesEventSeq != null">
+            AND s.SALES_EVENT_SEQ = #{salesEventSeq}
+        </if>
+        ORDER BY s.SALES_SEQ DESC
+    </select>
+
+    <select id="selectBySeq" parameterType="Integer" resultMap="salesResultMap">
+        <include refid="selectSalesSql"/>
+        WHERE s.SALES_SEQ = #{salesSeq}
+    </select>
+
+    <select id="selectByEventSeq" parameterType="Integer" resultMap="salesResultMap">
+        <include refid="selectSalesSql"/>
+        WHERE s.SALES_EVENT_SEQ = #{salesEventSeq}
+        ORDER BY s.SALES_SEQ DESC
+    </select>
+
+    <select id="selectByFilter" resultMap="salesResultMap">
+        <include refid="selectSalesSql"/>
+        <where>
+            <if test="salesYear != null and salesYear != ''">
+                AND s.SALES_YMD LIKE CONCAT(#{salesYear}, '%')
+            </if>
+            <if test="salesEventSeq != null">
+                AND s.SALES_EVENT_SEQ = #{salesEventSeq}
+            </if>
+        </where>
+        ORDER BY s.SALES_SEQ DESC
+    </select>
+
+    <select id="selectByItemDateEvent" resultMap="salesResultMap">
+        <include refid="selectSalesSql"/>
+        WHERE s.ITEM_CD = #{itemCd}
+          AND s.SALES_YMD = #{salesYmd}
+          AND (
+            (#{salesEventSeq} IS NULL AND s.SALES_EVENT_SEQ IS NULL)
+            OR s.SALES_EVENT_SEQ = #{salesEventSeq}
+          )
+        LIMIT 1
+    </select>
+
+    <update id="updateQuantity">
+        UPDATE TB_SALES
+        SET SALES_QNTY = GREATEST(0, SALES_QNTY + #{delta}),
+            UPDT_DT    = CURRENT_TIMESTAMP
+        WHERE SALES_SEQ = #{salesSeq}
+    </update>
+
+    <select id="selectDistinctYears" resultType="String">
+        SELECT DISTINCT LEFT(SALES_YMD, 4) AS salesYear
+        FROM TB_SALES
+        ORDER BY salesYear DESC
+    </select>
+
+    <insert id="insert" parameterType="com.ciatshop.api.domain.Sales"
+            useGeneratedKeys="true" keyProperty="salesSeq">
+        INSERT INTO TB_SALES (
+            SALES_YMD, ITEM_CD, SALES_QNTY, SALES_PRICE,
+            ORDER_SE_CD, SALES_SE_CD, SALES_PLACE_SE_CD, SALES_EVENT_SEQ
+        ) VALUES (
+            #{salesYmd}, #{itemCd}, #{salesQnty}, #{salesPrice},
+            #{orderSeCd}, #{salesSeCd}, #{salesPlaceSeCd}, #{salesEventSeq}
+        )
+    </insert>
+
+    <delete id="delete" parameterType="Integer">
+        DELETE FROM TB_SALES WHERE SALES_SEQ = #{salesSeq}
+    </delete>
+
+</mapper>

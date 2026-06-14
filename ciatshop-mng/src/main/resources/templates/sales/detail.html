@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>판매내역 상세</title></head>
+<body>
+<nav th:replace="~{layout :: nav('sales')}"></nav>
+<div class="container">
+    <div class="card" style="max-width:700px;">
+        <h2>판매내역 상세</h2>
+        <div class="detail-grid">
+            <div class="dl">판매 순번</div>    <div class="dl" th:text="${sales.salesSeq}"></div>
+            <div class="dl">판매일자</div>     <div class="dl" th:text="${sales.salesYmd}"></div>
+            <div class="dl">상품코드</div>     <div class="dl" th:text="${sales.itemCd}"></div>
+            <div class="dl">상품명</div>       <div class="dl" th:text="${sales.itemNm}"></div>
+            <div class="dl">판매수량</div>     <div class="dl" th:text="${#numbers.formatInteger(sales.salesQnty,1,'COMMA') + ' 개'}"></div>
+            <div class="dl">판매가격</div>
+            <div class="dl" th:text="${sales.salesPrice != null} ? ${#numbers.formatInteger(sales.salesPrice,1,'COMMA') + '원'} : '-'"
+                 style="font-weight:700;color:#e74c3c;"></div>
+            <div class="dl">주문구분코드</div> <div class="dl" th:text="${sales.orderSeCd} ?: '-'"></div>
+            <div class="dl">판매구분코드</div> <div class="dl" th:text="${sales.salesSeCd} ?: '-'"></div>
+            <div class="dl">판매장소코드</div> <div class="dl" th:text="${sales.salesPlaceSeCd} ?: '-'"></div>
+            <div class="dl">이벤트 순번</div>
+            <div class="dl">
+                <span th:if="${sales.salesEventSeq != null}"
+                      class="badge" style="background:#d5f5e3;color:#1e8449;"
+                      th:text="'#' + ${sales.salesEventSeq}"></span>
+                <span th:if="${sales.salesEventSeq == null}" style="color:#999;">없음</span>
+            </div>
+        </div>
+        <div class="actions" style="margin-top:20px;">
+            <a href="/view/sales" class="btn btn-secondary">목록</a>
+            <button class="btn btn-danger"
+                    th:data-seq="${sales.salesSeq}"
+                    onclick="deleteSales(this.dataset.seq)">삭제</button>
+        </div>
+    </div>
+</div>
+<script>
+function deleteSales(seq) {
+    if (!confirm('판매내역을 삭제하시겠습니까?')) return;
+    fetch(API_BASE + '/api/v1/sales/' + seq, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => { if (data.success) location.href = '/view/sales'; else alert(data.message); });
+}
+</script>
+</body>
+</html>

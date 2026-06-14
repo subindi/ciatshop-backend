@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:9
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ciatshop
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ciatnet
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./ciatshop
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/ciatshop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ciatnet
+
+  mng:
+    build: ./ciatshop-mng
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/ciatshop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      API_BASE_URL: http://${SERVER_IP}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ciatnet
+
+  front:
+    build: ./ciatshop-front
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - ciatnet
+
+networks:
+  ciatnet:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ciatshop.api.mapper.EventItemMapper">
+
+    <resultMap id="eventItemResultMap" type="com.ciatshop.api.domain.EventItem">
+        <id     property="eventItemSeq"  column="EVENT_ITEM_SEQ"/>
+        <result property="salesEventSeq" column="SALES_EVENT_SEQ"/>
+        <result property="itemCd"        column="ITEM_CD"/>
+        <result property="itemNm"        column="ITEM_NM"/>
+        <result property="itemSellPrice" column="ITEM_SELL_PRICE"/>
+        <result property="inqnty"        column="INQNTY"/>
+        <result property="sellPrice"     column="SELL_PRICE"/>
+        <result property="useYn"         column="USE_YN"/>
+        <result property="regDt"         column="REG_DT"/>
+        <result property="updtDt"        column="UPDT_DT"/>
+    </resultMap>
+
+    <select id="selectByEvent" resultMap="eventItemResultMap">
+        SELECT ei.EVENT_ITEM_SEQ,
+               ei.SALES_EVENT_SEQ,
+               ei.ITEM_CD,
+               i.ITEM_NM,
+               i.SELL_PRICE  AS ITEM_SELL_PRICE,
+               ei.INQNTY,
+               ei.SELL_PRICE,
+               ei.USE_YN,
+               ei.REG_DT,
+               ei.UPDT_DT
+          FROM TB_EVENT_ITEM ei
+          JOIN TB_ITEM i ON i.ITEM_CD = ei.ITEM_CD
+         WHERE ei.SALES_EVENT_SEQ = #{salesEventSeq}
+         ORDER BY ei.ITEM_CD
+    </select>
+
+    <select id="selectBySeq" resultMap="eventItemResultMap">
+        SELECT ei.EVENT_ITEM_SEQ,
+               ei.SALES_EVENT_SEQ,
+               ei.ITEM_CD,
+               i.ITEM_NM,
+               i.SELL_PRICE  AS ITEM_SELL_PRICE,
+               ei.INQNTY,
+               ei.SELL_PRICE,
+               ei.USE_YN,
+               ei.REG_DT,
+               ei.UPDT_DT
+          FROM TB_EVENT_ITEM ei
+          JOIN TB_ITEM i ON i.ITEM_CD = ei.ITEM_CD
+         WHERE ei.EVENT_ITEM_SEQ = #{eventItemSeq}
+    </select>
+
+    <select id="existsByEventAndItem" resultType="boolean">
+        SELECT COUNT(1) > 0
+          FROM TB_EVENT_ITEM
+         WHERE SALES_EVENT_SEQ = #{salesEventSeq}
+           AND ITEM_CD = #{itemCd}
+    </select>
+
+    <insert id="insert" parameterType="com.ciatshop.api.domain.EventItem"
+            useGeneratedKeys="true" keyProperty="eventItemSeq">
+        INSERT INTO TB_EVENT_ITEM (
+            SALES_EVENT_SEQ, ITEM_CD, INQNTY, SELL_PRICE, USE_YN
+        ) VALUES (
+            #{salesEventSeq}, #{itemCd}, #{inqnty}, #{sellPrice}, #{useYn}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ciatshop.api.domain.EventItem">
+        UPDATE TB_EVENT_ITEM
+           SET INQNTY    = #{inqnty},
+               SELL_PRICE = #{sellPrice},
+               USE_YN    = #{useYn},
+               UPDT_DT   = CURRENT_TIMESTAMP
+         WHERE EVENT_ITEM_SEQ = #{eventItemSeq}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM TB_EVENT_ITEM
+         WHERE EVENT_ITEM_SEQ = #{eventItemSeq}
+    </delete>
+
+</mapper>

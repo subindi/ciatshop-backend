@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>상품 상세</title></head>
+<body>
+<nav th:replace="~{layout :: nav('items')}"></nav>
+<div class="container">
+    <div class="card">
+        <h2>상품 상세</h2>
+        <div class="detail-grid">
+            <div class="dl">상품코드</div>       <div class="dl" th:text="${item.itemCd}"></div>
+            <div class="dl">상품명</div>         <div class="dl" th:text="${item.itemNm}"></div>
+            <div class="dl">재고수량</div>       <div class="dl" th:text="${#numbers.formatInteger(item.itemQnty,1,'COMMA')}"></div>
+            <div class="dl">원가</div>           <div class="dl" th:text="${item.unitPrice != null} ? ${#numbers.formatInteger(item.unitPrice,1,'COMMA') + '원'} : '-'"></div>
+            <div class="dl">판매가</div>         <div class="dl" th:text="${item.sellPrice != null} ? ${#numbers.formatInteger(item.sellPrice,1,'COMMA') + '원'} : '-'"></div>
+            <div class="dl">상품구분코드</div>   <div class="dl" th:text="${item.itemSeCd}"></div>
+            <div class="dl">카테고리코드</div>   <div class="dl" th:text="${item.itemCateCd}"></div>
+        </div>
+        <div class="actions" style="margin-top:20px;">
+            <a href="/view/items" class="btn btn-secondary">목록</a>
+            <a th:href="@{/view/items/{cd}/edit(cd=${item.itemCd})}" class="btn btn-warning">수정</a>
+            <button class="btn btn-danger" th:data-item-cd="${item.itemCd}" onclick="deleteItem(this.dataset.itemCd)">삭제</button>
+        </div>
+    </div>
+</div>
+<script>
+function deleteItem(itemCd) {
+    if (!confirm('상품을 삭제하시겠습니까?')) return;
+    fetch(API_BASE + '/api/v1/items/' + encodeURIComponent(itemCd), { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => { if (data.success) location.href = '/view/items'; else alert(data.message); });
+}
+</script>
+</body>
+</html>

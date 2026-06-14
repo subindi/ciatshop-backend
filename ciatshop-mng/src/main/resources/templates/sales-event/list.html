@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>판매이벤트 목록</title></head>
+<body>
+<nav th:replace="~{layout :: nav('events')}"></nav>
+<div class="container">
+    <div class="card">
+        <h2>판매이벤트 목록</h2>
+        <div class="actions">
+            <a href="/view/sales-events/new" class="btn btn-primary">+ 이벤트 등록</a>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>순번</th><th>이벤트명</th><th>시작일</th><th>종료일</th><th>수수료</th><th>수수료구분</th><th>부가세</th><th>관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(events)}">
+                <td colspan="8" class="empty">등록된 이벤트가 없습니다.</td>
+            </tr>
+            <tr th:each="ev : ${events}">
+                <td th:text="${ev.salesEventSeq}"></td>
+                <td><a th:href="@{/view/sales-events/{seq}(seq=${ev.salesEventSeq})}" th:text="${ev.salesEventNm}" style="color:#3498db;text-decoration:none;font-weight:600;"></a></td>
+                <td th:text="${ev.salesEventStrYmd}"></td>
+                <td th:text="${ev.salesEventEndYmd}"></td>
+                <td th:text="${ev.profitAmt != null} ? ${#numbers.formatInteger(ev.profitAmt,1,'COMMA') + '원'} : '-'"></td>
+                <td><span class="badge badge-blue" th:text="${ev.profitSeCd}"></span></td>
+                <td th:text="${ev.profitVatYn}"></td>
+                <td style="display:flex;gap:4px;">
+                    <a th:href="@{/view/sales-events/{seq}/edit(seq=${ev.salesEventSeq})}" class="btn btn-warning" style="padding:4px 10px;font-size:12px;">수정</a>
+                    <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;"
+                            th:data-seq="${ev.salesEventSeq}" onclick="deleteEvent(this.dataset.seq)">삭제</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+function deleteEvent(seq) {
+    if (!confirm('이벤트를 삭제하시겠습니까?')) return;
+    fetch(API_BASE + '/api/v1/sales-events/' + seq, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => { if (data.success) location.reload(); else alert(data.message); });
+}
+</script>
+</body>
+</html>

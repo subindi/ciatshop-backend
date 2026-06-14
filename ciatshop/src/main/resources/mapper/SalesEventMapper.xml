@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ciatshop.api.mapper.SalesEventMapper">
+
+    <resultMap id="salesEventResultMap" type="com.ciatshop.api.domain.SalesEvent">
+        <id     property="salesEventSeq"    column="SALES_EVENT_SEQ"/>
+        <result property="salesEventNm"     column="SALES_EVENT_NM"/>
+        <result property="salesEventStrYmd" column="SALES_EVENT_STR_YMD"/>
+        <result property="salesEventEndYmd" column="SALES_EVENT_END_YMD"/>
+        <result property="profitAmt"        column="PROFIT_AMT"/>
+        <result property="profitSeCd"       column="PROFIT_SE_CD"/>
+        <result property="profitVatYn"      column="PROFIT_VAT_YN"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="salesEventResultMap">
+        SELECT SALES_EVENT_SEQ, SALES_EVENT_NM,
+               SALES_EVENT_STR_YMD, SALES_EVENT_END_YMD,
+               PROFIT_AMT, PROFIT_SE_CD, PROFIT_VAT_YN
+        FROM TB_SALES_EVENT
+        ORDER BY SALES_EVENT_SEQ DESC
+    </select>
+
+    <select id="selectByYear" parameterType="String" resultMap="salesEventResultMap">
+        SELECT SALES_EVENT_SEQ, SALES_EVENT_NM,
+               SALES_EVENT_STR_YMD, SALES_EVENT_END_YMD,
+               PROFIT_AMT, PROFIT_SE_CD, PROFIT_VAT_YN
+        FROM TB_SALES_EVENT
+        WHERE LEFT(SALES_EVENT_STR_YMD, 4) &lt;= #{salesYear}
+          AND LEFT(SALES_EVENT_END_YMD, 4) &gt;= #{salesYear}
+        ORDER BY SALES_EVENT_SEQ ASC
+    </select>
+
+    <select id="selectBySeq" parameterType="Integer" resultMap="salesEventResultMap">
+        SELECT SALES_EVENT_SEQ, SALES_EVENT_NM,
+               SALES_EVENT_STR_YMD, SALES_EVENT_END_YMD,
+               PROFIT_AMT, PROFIT_SE_CD, PROFIT_VAT_YN
+        FROM TB_SALES_EVENT
+        WHERE SALES_EVENT_SEQ = #{salesEventSeq}
+    </select>
+
+    <insert id="insert" parameterType="com.ciatshop.api.domain.SalesEvent"
+            useGeneratedKeys="true" keyProperty="salesEventSeq">
+        INSERT INTO TB_SALES_EVENT (
+            SALES_EVENT_NM, SALES_EVENT_STR_YMD, SALES_EVENT_END_YMD,
+            PROFIT_AMT, PROFIT_SE_CD, PROFIT_VAT_YN
+        ) VALUES (
+            #{salesEventNm}, #{salesEventStrYmd}, #{salesEventEndYmd},
+            #{profitAmt}, #{profitSeCd}, #{profitVatYn}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ciatshop.api.domain.SalesEvent">
+        UPDATE TB_SALES_EVENT
+        SET SALES_EVENT_NM     = #{salesEventNm},
+            SALES_EVENT_STR_YMD = #{salesEventStrYmd},
+            SALES_EVENT_END_YMD = #{salesEventEndYmd},
+            PROFIT_AMT         = #{profitAmt},
+            PROFIT_SE_CD       = #{profitSeCd},
+            PROFIT_VAT_YN      = #{profitVatYn}
+        WHERE SALES_EVENT_SEQ = #{salesEventSeq}
+    </update>
+
+    <delete id="delete" parameterType="Integer">
+        DELETE FROM TB_SALES_EVENT WHERE SALES_EVENT_SEQ = #{salesEventSeq}
+    </delete>
+
+</mapper>

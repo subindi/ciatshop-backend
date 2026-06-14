@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>판매내역 조회</title></head>
+<body>
+<nav th:replace="~{layout :: nav('sales')}"></nav>
+<div class="container">
+
+    <!-- ===== 검색 패널 ===== -->
+    <div class="card" style="padding:20px 28px;">
+        <h2>판매내역 조회</h2>
+        <form method="get" action="/view/sales">
+            <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+                <div class="form-group" style="margin:0;min-width:140px;">
+                    <label>년도</label>
+                    <select id="salesYearSelect" name="salesYear" style="width:140px;"
+                            onchange="onYearChange(this.value)">
+                        <option value="">-- 전체 --</option>
+                        <option th:each="yr : ${years}"
+                                th:value="${yr}"
+                                th:text="${yr + '년'}"
+                                th:selected="${yr == selectedYear}"></option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;min-width:280px;flex:1;">
+                    <label>이벤트</label>
+                    <select id="salesEventSeqSelect" name="salesEventSeq">
+                        <option value="">-- 전체 --</option>
+                        <option th:each="ev : ${events}"
+                                th:value="${ev.salesEventSeq}"
+                                th:text="${ev.salesEventNm + '  (' + ev.salesEventStrYmd + ' ~ ' + ev.salesEventEndYmd + ')'}"
+                                th:selected="${ev.salesEventSeq == selectedEventSeq}"></option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;padding-bottom:1px;">
+                    <button type="submit" class="btn btn-primary">조회</button>
+                    <a href="/view/sales" class="btn btn-secondary">초기화</a>
+                    <a href="/view/sales/new" class="btn btn-success">+ 판매 등록</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ===== 검색 전 안내 ===== -->
+    <div th:if="${salesList == null}" class="card">
+        <p class="empty" style="padding:40px;">년도 또는 이벤트를 선택하고 조회하세요.</p>
+    </div>
+
+    <!-- ===== 결과 ===== -->
+    <div th:if="${salesList != null}" class="card" style="padding:20px 28px;">
+
+        <!-- 요약 바 -->
+        <div style="display:flex;gap:24px;align-items:center;margin-bottom:16px;padding:12px 16px;background:#f0f7ff;border-radius:6px;font-size:14px;">
+            <span>검색결과 <strong th:text="${#lists.size(salesList)}" style="color:#2980b9;font-size:16px;"></strong> 건</span>
+            <span style="color:#ccc;">|</span>
+            <span>총 판매수량 <strong th:text="${#numbers.formatInteger(totalQnty,1,'COMMA')}" style="color:#2980b9;"></strong> 개</span>
+            <span style="color:#ccc;">|</span>
+            <span>총 판매금액 <strong th:text="${#numbers.formatInteger(totalAmount,1,'COMMA') + '원'}" style="color:#e74c3c;font-size:15px;"></strong></span>
+        </div>
+
+        <!-- 결과 없음 -->
+        <p th:if="${#lists.isEmpty(salesList)}" class="empty">해당 조건의 판매내역이 없습니다.</p>
+
+        <!-- 테이블 -->
+        <table th:if="${!#lists.isEmpty(salesList)}">
+            <thead>
+            <tr>
+                <th style="width:60px;">순번</th>
+                <th style="width:90px;">판매일자</th>
+                <th style="width:100px;">상품코드</th>
+                <th>상품명</th>
+                <th style="width:70px;text-align:right;">수량</th>
+                <th style="width:100px;text-align:right;">판매가</th>
+                <th style="width:80px;">주문구분</th>
+                <th style="width:80px;">판매구분</th>
+                <th style="width:80px;">판매장소</th>
+                <th style="width:70px;text-align:center;">이벤트</th>
+                <th style="width:60px;text-align:center;">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${salesList}">
+                <td>
+                    <a th:href="@{/view/sales/{seq}(seq=${s.salesSeq})}"
+                       th:text="${s.salesSeq}"
+                       style="color:#3498db;text-decoration:none;font-weight:600;"></a>
+                </td>
+                <td th:text="${s.salesYmd}"></td>
+                <td th:text="${s.itemCd}" style="font-size:12px;color:#666;"></td>
+                <td th:text="${s.itemNm}" style="font-weight:500;"></td>
+                <td th:text="${#numbers.formatInteger(s.salesQnty,1,'COMMA')}" style="text-align:right;"></td>
+                <td th:text="${s.salesPrice != null} ? ${#numbers.formatInteger(s.salesPrice,1,'COMMA') + '원'} : '-'"
+                    style="text-align:right;"></td>
+                <td><span class="badge badge-blue" th:if="${s.orderSeCd != null}" th:text="${s.orderSeCd}"></span></td>
+                <td><span class="badge badge-blue" th:if="${s.salesSeCd != null}" th:text="${s.salesSeCd}"></span></td>
+                <td th:text="${s.salesPlaceSeCd}" style="font-size:12px;"></td>
+                <td style="text-align:center;">
+                    <span th:if="${s.salesEventSeq != null}"
+                          class="badge"
+                          style="background:#d5f5e3;color:#1e8449;"
+                          th:text="'#' + ${s.salesEventSeq}"></span>
+                    <span th:if="${s.salesEventSeq == null}" style="color:#ccc;">-</span>
+                </td>
+                <td style="text-align:center;">
+                    <button class="btn btn-danger"
+                            style="padding:3px 8px;font-size:11px;"
+                            th:data-seq="${s.salesSeq}"
+                            onclick="deleteSales(this.dataset.seq)">삭제</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script th:inline="javascript">
+const selectedEventSeq = /*[[${selectedEventSeq}]]*/ null;
+</script>
+<script>
+function onYearChange(year) {
+    const sel = document.getElementById('salesEventSeqSelect');
+    sel.innerHTML = '<option value="">-- 전체 --</option>';
+    if (!year) return;
+
+    fetch(API_BASE + '/api/v1/sales-events/by-year/' + year)
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) { console.error('이벤트 조회 실패:', res); return; }
+            (res.data || []).forEach(ev => {
+                const opt = document.createElement('option');
+                opt.value = ev.salesEventSeq;
+                opt.textContent = ev.salesEventNm + '  (' + ev.salesEventStrYmd + ' ~ ' + ev.salesEventEndYmd + ')';
+                sel.appendChild(opt);
+            });
+        })
+        .catch(err => console.error('이벤트 fetch 오류:', err));
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const yearSel = document.getElementById('salesYearSelect');
+    if (yearSel.value) {
+        const keepSeq = selectedEventSeq;
+        const eventSel = document.getElementById('salesEventSeqSelect');
+
+        fetch(API_BASE + '/api/v1/sales-events/by-year/' + yearSel.value)
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) return;
+                eventSel.innerHTML = '<option value="">-- 전체 --</option>';
+                (res.data || []).forEach(ev => {
+                    const opt = document.createElement('option');
+                    opt.value = ev.salesEventSeq;
+                    opt.textContent = ev.salesEventNm + '  (' + ev.salesEventStrYmd + ' ~ ' + ev.salesEventEndYmd + ')';
+                    if (keepSeq && ev.salesEventSeq == keepSeq) opt.selected = true;
+                    eventSel.appendChild(opt);
+                });
+            });
+    }
+});
+
+function deleteSales(seq) {
+    if (!confirm('판매내역 [' + seq + ']을(를) 삭제하시겠습니까?')) return;
+    fetch(API_BASE + '/api/v1/sales/' + seq, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => { if (data.success) location.reload(); else alert(data.message); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ===== HEAD fragment ===== -->
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Malgun Gothic', sans-serif; background: #f5f5f5; color: #333; }
+        nav { background: #2c3e50; padding: 0 24px; display: flex; align-items: center; gap: 8px; height: 52px; }
+        nav .brand { color: #3498db; font-size: 18px; font-weight: bold; margin-right: 16px; }
+        nav a { color: #ecf0f1; text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: 4px; }
+        nav a:hover { background: #34495e; }
+        nav a.active { background: #3498db; }
+        .container { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); padding: 28px; margin-bottom: 24px; }
+        h2 { font-size: 20px; margin-bottom: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #ecf0f1; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #f9f9f9; }
+        .btn { display: inline-block; padding: 7px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; border: none; text-decoration: none; font-weight: 500; }
+        .btn-primary { background: #3498db; color: #fff; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: #27ae60; color: #fff; }
+        .btn-success:hover { background: #219a52; }
+        .btn-warning { background: #f39c12; color: #fff; }
+        .btn-warning:hover { background: #d68910; }
+        .btn-danger { background: #e74c3c; color: #fff; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-secondary { background: #95a5a6; color: #fff; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .actions { display: flex; gap: 8px; margin-bottom: 16px; justify-content: flex-end; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #555; }
+        input, select { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        input:focus, select:focus { outline: none; border-color: #3498db; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .detail-grid { display: grid; grid-template-columns: 180px 1fr; gap: 0; border: 1px solid #eee; border-radius: 4px; overflow: hidden; }
+        .detail-grid .dl { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #eee; }
+        .detail-grid .dl:nth-child(odd) { background: #f8f9fa; font-weight: 600; color: #555; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-blue { background: #d6eaf8; color: #1a5276; }
+        .empty { text-align: center; color: #999; padding: 32px; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .search-bar input { max-width: 200px; }
+        .alert { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; }
+        .alert-error { background: #fadbd8; color: #922b21; border: 1px solid #f1948a; }
+    </style>
+    <!-- API 서버 URL: JavaScript fetch에서 사용 -->
+    <script th:inline="javascript">
+        const API_BASE = /*[[${@environment.getProperty('ciatshop.api.base-url')}]]*/ 'http://localhost:8080';
+    </script>
+</head>
+
+<!-- ===== NAV fragment ===== -->
+<nav th:fragment="nav(active)">
+    <span class="brand">건어물 관리자</span>
+    <a href="/view/items" th:classappend="${active == 'items'} ? 'active'">상품관리</a>
+    <a href="/view/sales-events" th:classappend="${active == 'events'} ? 'active'">판매이벤트</a>
+    <a href="/view/event-items" th:classappend="${active == 'event-items'} ? 'active'">이벤트 상품</a>
+    <a href="/view/sales" th:classappend="${active == 'sales'} ? 'active'">판매내역</a>
+</nav>
+
+<body></body>
+</html>

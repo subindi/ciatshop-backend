@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: ciatshop-mng
+  profiles:
+    active: local
+
+server:
+  port: 8081
+
+ciatshop:
+  api:
+    base-url: http://localhost:8080

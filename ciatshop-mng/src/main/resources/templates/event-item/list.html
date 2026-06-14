@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"><title>이벤트 상품 관리</title></head>
+<body>
+<nav th:replace="~{layout :: nav('event-items')}"></nav>
+
+<div class="container">
+
+    <!-- 이벤트 선택 -->
+    <div class="card">
+        <h2>이벤트 상품 관리</h2>
+        <form method="get" action="/view/event-items" style="display:flex; gap:10px; align-items:flex-end;">
+            <div class="form-group" style="margin:0; flex:1; max-width:360px;">
+                <label>판매 이벤트 선택</label>
+                <select name="salesEventSeq" onchange="this.form.submit()">
+                    <option value="">-- 이벤트를 선택하세요 --</option>
+                    <option th:each="e : ${events}"
+                            th:value="${e.salesEventSeq}"
+                            th:text="${e.salesEventNm} + ' (' + ${e.salesEventStrYmd} + '~' + ${e.salesEventEndYmd} + ')'"
+                            th:selected="${e.salesEventSeq == selectedEventSeq}">
+                    </option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- 이벤트 선택 전 안내 -->
+    <div th:if="${selectedEventSeq == null}" class="card">
+        <p class="empty">이벤트를 선택하면 해당 이벤트의 판매 상품 목록을 관리할 수 있습니다.</p>
+    </div>
+
+    <!-- 이벤트 선택 후: 상품 목록 -->
+    <div th:if="${selectedEventSeq != null}" class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="margin:0; border:none; padding:0;"
+                th:text="${selectedEvent?.salesEventNm} + ' — 판매 상품'">이벤트 판매 상품</h2>
+            <button class="btn btn-primary" onclick="openAddModal()">+ 상품 추가</button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(eventItems)}" class="empty">
+            등록된 판매 상품이 없습니다. 상품 추가 버튼을 눌러 추가하세요.
+        </div>
+
+        <table th:if="${!#lists.isEmpty(eventItems)}">
+            <thead>
+                <tr>
+                    <th style="width:110px;">상품코드</th>
+                    <th>상품명</th>
+                    <th style="width:110px; text-align:right;">기본판매가</th>
+                    <th style="width:130px; text-align:right;">이벤트판매가</th>
+                    <th style="width:110px; text-align:right;">입고수량</th>
+                    <th style="width:80px; text-align:center;">사용여부</th>
+                    <th style="width:130px; text-align:center;">저장/삭제</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ei : ${eventItems}" th:id="'row-' + ${ei.eventItemSeq}">
+                    <td th:text="${ei.itemCd}" style="font-family:monospace;"></td>
+                    <td th:text="${ei.itemNm}"></td>
+                    <td style="text-align:right;"
+                        th:text="${ei.itemSellPrice != null} ? ${#numbers.formatInteger(ei.itemSellPrice,1,'COMMA')} + '원' : '-'">
+                    </td>
+                    <td style="text-align:right;">
+                        <input type="number"
+                               th:id="'sell-' + ${ei.eventItemSeq}"
+                               th:value="${ei.sellPrice}"
+                               min="0" placeholder="기본가 사용"
+                               style="width:100%; text-align:right; padding:4px 6px;"/>
+                    </td>
+                    <td style="text-align:right;">
+                        <input type="number"
+                               th:id="'inq-' + ${ei.eventItemSeq}"
+                               th:value="${ei.inqnty}"
+                               min="0"
+                               style="width:100%; text-align:right; padding:4px 6px;"/>
+                    </td>
+                    <td style="text-align:center;">
+                        <select th:id="'use-' + ${ei.eventItemSeq}"
+                                style="width:100%; padding:4px 6px;">
+                            <option value="Y" th:selected="${ei.useYn == 'Y'}">사용</option>
+                            <option value="N" th:selected="${ei.useYn == 'N'}">미사용</option>
+                        </select>
+                    </td>
+                    <td style="text-align:center;">
+                        <div style="display:flex; gap:4px; justify-content:center;">
+                            <button class="btn btn-success"
+                                    style="padding:4px 10px; font-size:12px;"
+                                    th:onclick="'saveRow(' + ${ei.eventItemSeq} + ',' + ${selectedEventSeq} + ',\'' + ${ei.itemCd} + '\')'">
+                                저장
+                            </button>
+                            <button class="btn btn-danger"
+                                    style="padding:4px 10px; font-size:12px;"
+                                    th:onclick="'deleteRow(' + ${ei.eventItemSeq} + ')'">
+                                삭제
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 합계 -->
+        <div th:if="${!#lists.isEmpty(eventItems)}"
+             style="margin-top:12px; text-align:right; font-size:13px; color:#666;">
+            총 <strong th:text="${#lists.size(eventItems)}">0</strong>개 상품 &nbsp;|&nbsp;
+            총 입고수량:
+            <strong th:text="${#numbers.formatInteger(eventItems.stream().mapToInt(e -> e.inqnty()).sum(), 1, 'COMMA')}">0</strong>개
+        </div>
+    </div>
+</div>
+
+<!-- 상품 추가 모달 -->
+<div id="addModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:8px; padding:28px; width:480px; max-height:80vh;
+                overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+        <h2 style="margin-bottom:16px;">상품 추가</h2>
+
+        <div class="form-group">
+            <label>상품 선택 *</label>
+            <select id="modalItemCd" style="width:100%;">
+                <option value="">-- 상품을 선택하세요 --</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>입고수량</label>
+                <input type="number" id="modalInqnty" value="0" min="0" style="width:100%;"/>
+            </div>
+            <div class="form-group">
+                <label>이벤트판매가 <span style="color:#999; font-weight:400;">(비우면 기본가)</span></label>
+                <input type="number" id="modalSellPrice" placeholder="기본 판매가 사용" min="0" style="width:100%;"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>사용여부</label>
+            <select id="modalUseYn" style="width:100%;">
+                <option value="Y">사용</option>
+                <option value="N">미사용</option>
+            </select>
+        </div>
+
+        <div id="modalErr" class="alert alert-error" style="display:none;"></div>
+
+        <div class="actions" style="margin-top:8px;">
+            <button class="btn btn-secondary" onclick="closeAddModal()">취소</button>
+            <button class="btn btn-primary" onclick="submitAdd()">추가</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const API_BASE       = /*[[${@environment.getProperty('ciatshop.api.base-url')}]]*/ 'http://localhost:8080';
+    const selectedEventSeq = /*[[${selectedEventSeq}]]*/ null;
+
+    // 이미 등록된 상품코드 목록
+    const registeredCds = new Set(/*[[${eventItems != null ? eventItems.![itemCd] : {}}]]*/ []);
+
+    // 전체 상품 목록 (모달용)
+    const allItems = /*[[${allItems != null ? allItems : {}}]]*/ [];
+
+    /* ── 행 저장 ── */
+    function saveRow(eventItemSeq, salesEventSeq, itemCd) {
+        const inqnty    = Number(document.getElementById('inq-'  + eventItemSeq).value);
+        const sellPrice = document.getElementById('sell-' + eventItemSeq).value;
+        const useYn     = document.getElementById('use-'  + eventItemSeq).value;
+
+        fetch(API_BASE + '/api/v1/event-items/' + eventItemSeq, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                salesEventSeq,
+                itemCd,
+                inqnty,
+                sellPrice: sellPrice !== '' ? Number(sellPrice) : null,
+                useYn
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) showToast('저장되었습니다.');
+            else alert('저장 실패: ' + d.message);
+        })
+        .catch(() => alert('통신 오류가 발생했습니다.'));
+    }
+
+    /* ── 행 삭제 ── */
+    function deleteRow(eventItemSeq) {
+        if (!confirm('이 상품을 이벤트에서 제거하시겠습니까?')) return;
+        fetch(API_BASE + '/api/v1/event-items/' + eventItemSeq, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) document.getElementById('row-' + eventItemSeq).remove();
+            else alert('삭제 실패: ' + d.message);
+        })
+        .catch(() => alert('통신 오류가 발생했습니다.'));
+    }
+
+    /* ── 추가 모달 ── */
+    function openAddModal() {
+        const sel = document.getElementById('modalItemCd');
+        sel.innerHTML = '<option value="">-- 상품을 선택하세요 --</option>';
+        allItems.forEach(item => {
+            if (!registeredCds.has(item.itemCd)) {
+                const opt = document.createElement('option');
+                opt.value = item.itemCd;
+                opt.textContent = item.itemCd + ' — ' + item.itemNm
+                    + (item.sellPrice ? ' (' + item.sellPrice.toLocaleString() + '원)' : '');
+                sel.appendChild(opt);
+            }
+        });
+        document.getElementById('modalInqnty').value   = '0';
+        document.getElementById('modalSellPrice').value = '';
+        document.getElementById('modalUseYn').value    = 'Y';
+        document.getElementById('modalErr').style.display = 'none';
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function closeAddModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+
+    function submitAdd() {
+        const itemCd    = document.getElementById('modalItemCd').value;
+        const inqnty    = Number(document.getElementById('modalInqnty').value);
+        const sellPrice = document.getElementById('modalSellPrice').value;
+        const useYn     = document.getElementById('modalUseYn').value;
+
+        if (!itemCd) { showModalErr('상품을 선택해주세요.'); return; }
+
+        fetch(API_BASE + '/api/v1/event-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                salesEventSeq: selectedEventSeq,
+                itemCd,
+                inqnty,
+                sellPrice: sellPrice !== '' ? Number(sellPrice) : null,
+                useYn
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                closeAddModal();
+                location.reload();
+            } else {
+                showModalErr(d.message || '추가 실패');
+            }
+        })
+        .catch(() => showModalErr('통신 오류가 발생했습니다.'));
+    }
+
+    /* ── 유틸 ── */
+    function showModalErr(msg) {
+        const el = document.getElementById('modalErr');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);'
+                + 'background:#2c3e50;color:#fff;padding:10px 24px;border-radius:20px;'
+                + 'font-size:14px;z-index:9999;pointer-events:none;';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 1800);
+    }
+
+    // 모달 바깥 클릭 시 닫기
+    document.getElementById('addModal').addEventListener('click', function(e) {
+        if (e.target === this) closeAddModal();
+    });
+</script>
+</body>
+</html>
