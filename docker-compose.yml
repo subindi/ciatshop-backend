@@ -18,7 +18,7 @@ services:
       retries: 10
 
   api:
-    build: ./ciatshop
+    build: ./ciatshop-api
     restart: unless-stopped
     environment:
       DB_URL: jdbc:mysql://mysql:3306/ciatshop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8

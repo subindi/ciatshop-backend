@@ -8,7 +8,7 @@ ciatshop-front/dist/
 # Gradle
 .gradle/
 build/
-ciatshop/build/
+ciatshop-api/build/
 ciatshop-mng/build/
 
 # IntelliJ
@@ -26,3 +26,5 @@ Thumbs.db
 # Java
 *.class
 *.jar
+ciatshop-front/ciatshop-front/
+hello.js

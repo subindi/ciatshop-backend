@@ -8,7 +8,7 @@
 
 | 디렉토리 | 역할 | 포트 | 정책서 |
 |---|---|---|---|
-| `ciatshop/` | Spring Boot REST API 서버 | 8080 | `ciatshop/POLICY.md` |
+| `ciatshop-api/` | Spring Boot REST API 서버 | 8080 | `ciatshop-api/POLICY.md` |
 | `ciatshop-mng/` | Thymeleaf 관리자 화면 | 8081 | `ciatshop-mng/POLICY.md` |
 | `ciatshop-front/` | React + TypeScript 판매 카운터 | 5173 (dev) | `ciatshop-front/POLICY.md` |
 | `docker-compose.yml` | 전체 서비스 컨테이너 구성 | — | — |
@@ -69,7 +69,7 @@ docker exec -i mysql mysql --default-character-set=utf8mb4 `
 ## 실행 순서
 
 1. MySQL Docker 기동
-2. `ciatshop` (API) 실행 — IntelliJ, profile: `local`
+2. `ciatshop-api` (API) 실행 — IntelliJ, profile: `local`
 3. `ciatshop-mng` 실행 — IntelliJ
 4. `ciatshop-front` 실행 — `npm run dev`
 

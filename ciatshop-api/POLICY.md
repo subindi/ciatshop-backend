@@ -1,6 +1,6 @@
-# ciatshop API 정책서
+# ciatshop-api 정책서
 
-> 프로젝트: `ciatshop` (REST API 서버)  
+> 프로젝트: `ciatshop-api` (REST API 서버)  
 > 포트: 8080
 
 ---
