@@ -1,7 +1,7 @@
 # ciatshop-mng 정책서
 
 > 프로젝트: `ciatshop-mng` (관리자 화면)  
-> 포트: 8081  
+> 포트: 9090  
 > ciatshop API(8080) 실행 후 기동할 것
 
 ---
@@ -135,7 +135,7 @@ resources/templates/
 ```yaml
 # application.yml
 server:
-  port: 8081
+  port: 9090
 ciatshop:
   api:
     base-url: http://localhost:8080
@@ -148,6 +148,6 @@ ciatshop:
 ```
 IntelliJ → CiatshopMngApplication
 VM options: -Djava.io.tmpdir=C:\tmp
-접속: http://localhost:8081/view/items
+접속: http://localhost:9090/view/items
 ※ ciatshop API(8080)가 먼저 실행되어야 함
 ```
