@@ -1,7 +1,7 @@
 # ciatshop-front 정책서
 
 > 프로젝트: `ciatshop-front` (판매 카운터 — 핸드폰/태블릿용)  
-> 포트: 5173 (dev) / 80 (prod — nginx)  
+> 포트: 80 (dev/prod 공통)  
 > ciatshop API(8080) 실행 후 기동할 것
 
 ---
@@ -120,8 +120,8 @@ API CORS: `allowedOriginPatterns("*")` 설정으로 핸드폰 IP 허용
 cd ciatshop-front
 npm install
 npm run dev
-# 접속: http://localhost:5173
-# 핸드폰: http://{PC_IP}:5173
+# 접속: http://localhost:80
+# 핸드폰: http://{PC_IP}
 ```
 
 ---

@@ -10,7 +10,7 @@
 |---|---|---|---|
 | `ciatshop-api/` | Spring Boot REST API 서버 | 8080 | `ciatshop-api/POLICY.md` |
 | `ciatshop-mng/` | Thymeleaf 관리자 화면 | 8081 | `ciatshop-mng/POLICY.md` |
-| `ciatshop-front/` | React + TypeScript 판매 카운터 | 5173 (dev) | `ciatshop-front/POLICY.md` |
+| `ciatshop-front/` | React + TypeScript 판매 카운터 | 80 | `ciatshop-front/POLICY.md` |
 | `docker-compose.yml` | 전체 서비스 컨테이너 구성 | — | — |
 | `docs/` | DB 설계 정책서 및 마이그레이션 SQL | — | `docs/db-design-policy.md` |
 
@@ -82,7 +82,7 @@ docker exec -i mysql mysql --default-character-set=utf8mb4 `
 | 관리자 — 이벤트 | http://localhost:8081/view/sales-events |
 | 관리자 — 이벤트 상품 | http://localhost:8081/view/event-items |
 | 관리자 — 판매내역 | http://localhost:8081/view/sales |
-| 판매 카운터 | http://localhost:5173 |
+| 판매 카운터 | http://localhost:80 |
 
 ## 배포 계획
 
